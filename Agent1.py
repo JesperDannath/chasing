@@ -12,8 +12,9 @@ import numpy as np
 
 #Buildung the Model
 model = Sequential()
-model.add(Dense(8, activation="sigmoid", input_shape=(4,)))
-model.add(Dense(4, activation="sigmoid", input_shape=(8,)))
+model.add(Dense(30, activation="sigmoid", input_shape=(4,)))
+model.add(Dense(30, activation="sigmoid",input_shape=(8,)))
+model.add(Dense(1, input_shape=(8,)))
 
 #Compiling the Model
 sgd = SGD(lr=0.01)
@@ -23,5 +24,5 @@ model.compile(optimizer=sgd,
 
 
 #Examples for usage of Model
-#model.fit([[0,0,0,0]], [[0,1,0,0]])
+#model.fit([[0,0,0,0]], [1])
 #model.predict([[0,0,0,0]])

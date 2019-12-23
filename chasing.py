@@ -5,6 +5,31 @@ import numpy as np
 from scipy import stats
 import Agent1
 
+#Calculates possible state-changes
+def get_input_data(state, change_ind ,change, standardize=False):
+    result=[]
+    for i in range(0, len(change_ind)):
+        change_ind
+        increment = state.copy()
+        increment[change_ind[i]] = increment[change_ind[i]]+change
+        decrement = state.copy()
+        decrement[change_ind[i]] = decrement[change_ind[i]]-change
+        print(decrement[change_ind[i]])
+        result.append(increment)
+        result.append(decrement)
+    result = np.asarray(result)
+    if(standardize==True):
+        result = stats.zscore(result)
+    return(result)
+    
+def get_choice(predictions, exploration_rate):
+    choice = np.random.choice(a=["explore", "exploit"], p=[exploration_rate, 1-exploration_rate])
+    if choice == "explore":
+        return(random.randint(0,len(predictions)-1))
+    else:
+        return(np.argmax(predictions))
+        
+
 pygame.init()
 
 xlength=500
@@ -23,10 +48,6 @@ y1 = random.randint(0+(height/2), ylength-(height/2))
 x2 = random.randint(0+(width/2), xlength-(width/2))
 y2 = random.randint(0+(height/2), ylength-(height/2))
 
-x1p = x1
-y1p = y1
-x2p = x2
-y2p = y2
 
 #Velocity
 vel = 5
@@ -45,42 +66,47 @@ while run:
     distance_before = np.sqrt(sum([(x1-x2)**2, (y1-y2)**2]))
     
     #Predicting move for Agent1
-    input_data = np.expand_dims(stats.zscore(np.asarray([x1, y1, x2, y2])), axis=0)
-    prediction_agent1 = Agent1.model.predict(input_data)[0]
-    move_agent1 = np.random.choice(["L","R","U","D"], 
-                                   p=prediction_agent1/np.sum(prediction_agent1))
+    training_data = (np.expand_dims(np.asarray([x1, y1, x2, y2]), axis=0)-250)/250
+    state_data = get_input_data([x1, y1, x2, y2], [0,1], 5, False)
+    input_data = (state_data-250)/250
+    model_predictions1=np.squeeze(Agent1.model.predict(input_data))
+    #Using Exploration and Exploitation!!!
+    #prediction_agent1 = np.random.choice([i for i in range(0,len(model_predictions1))], #!!!
+    #                                     p=model_predictions1/np.sum(model_predictions1))
+    prediction_agent1 = get_choice(model_predictions1, 0.4)
+
+    new_state = state_data[prediction_agent1]
     
-    if(x1>xlength or x1<10 or y1>ylength or y1<10):
-        None
-    elif move_agent1 == "L":
-        x1p = x1
+    if(x1>xlength):
         x1 -= vel
-    elif move_agent1 == "R":
-        x1p = x1
+    elif(x1<20):
         x1 += vel
-    elif move_agent1 == "U":
-        y1p = y1
-        y1 += vel
-    elif move_agent1 == "D":
-        y1p = y1
+    elif(y1>ylength):
         y1 -= vel
+    elif(y1 < 20):
+        y1 += vel
+    else:
+        x1=new_state[0]
+        y1=new_state[1]
+        x2=new_state[2]
+        y2=new_state[3]        
+    #elif move_agent1 == "L":
+    #    x1 -= vel
+    #elif move_agent1 == "R":
+    #    x1 += vel
+    #elif move_agent1 == "U":
+    #    y1 += vel
+    #elif move_agent1 == "D":
+    #    y1 -= vel
     
     distance_after = np.sqrt(sum([(x1-x2)**2, (y1-y2)**2]))
     print(distance_after)
+    #defining the reward:
+    reward = (distance_before-distance_after)/5#+(500-distance_after)/10
     
-    fake_y = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
-    fake_y_agent1 = fake_y[np.random.choice([0,1,2,3], 
-                                   p=prediction_agent1/np.sum(prediction_agent1))]
-
-    if(distance_before>distance_after):
-        reward=1
-    else:
-        reward=-1
-    
-    Agent1.model.fit(input_data,
-                     np.expand_dims(np.multiply(reward,fake_y_agent1),
-                                    axis=0))
-    
+    #Using Q-Learning for Optimisation:
+    Agent1.model.fit(training_data,
+                     np.asarray([reward]))
     #Den gesamten Bildschirm Schwarz ausmahlen
     win.fill([0,0,0])
     
@@ -92,3 +118,4 @@ while run:
 pygame.quit()
 
 
+        
