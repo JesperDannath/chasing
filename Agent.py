@@ -13,20 +13,22 @@ import numpy as np
 #Buildung the Model
 def build_model():
     model = Sequential()
-    model.add(Dense(11, activation="sigmoid", input_shape=(6,)))
-    model.add(Dense(11, activation="sigmoid",input_shape=(8,)))
+    model.add(Dense(20, activation="relu", input_shape=(6,)))
+    model.add(Dense(20, activation="sigmoid",input_shape=(8,)))
     model.add(Dense(1, input_shape=(8,)))
     
     #Compiling the Model
-    sgd = SGD(lr=0.01)
-    #adam = Adam(learning_rate=0.01)
-    model.compile(optimizer=sgd,
+    #sgd = SGD(lr=0.01)
+    adam = Adam(learning_rate=0.01)
+    model.compile(optimizer=adam,
                   loss='mean_squared_error',
                   metrics=["acc"])
+
     return(model)
 
-
+model = build_model()
 #Examples for usage of Model
 #model.fit([[0,0,0,0]], [1])
 #model.predict([[0,0,0,0]])
+
 
