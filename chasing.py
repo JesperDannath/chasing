@@ -49,9 +49,20 @@ def get_choice(predictions, exploration_rate):
     else:
         return(np.argmax(predictions))
         
+#Using a cummaltion of single rewards with a certain discount factor:
+def discount_reward(factor, array):
+    discounted_future_reward = 0
+    for i in range(len(array)-1, -1, -1):
+        old_value = array[i]
+        array[i] = old_value+discounted_future_reward
+        discounted_future_reward = factor*(old_value)+factor*(discounted_future_reward)
+    return(array)
+        
+discount_reward(0.8, [1 for i in range(0, 10)])
 
 pygame.init()
 
+#Default (500*500)
 xlength=500
 ylength=500
 win = pygame.display.set_mode((xlength, ylength))
@@ -186,7 +197,7 @@ def main_loop(x1, y1, x2, y2):
         
         #defining the reward:
         #imediate reward + discounted reward of optimal policy, reward assumed constant, discount fact 0.8
-        reward_value = (distance_before-distance_after)+(500-distance_after)/50
+        reward_value = (distance_before-distance_after)#+(500-distance_after)/50
         
             #Game Over
         if(x1 > x2-20 and x1 < x2+20 and y1 > y2-20 and y1 < y2+20):
@@ -211,6 +222,11 @@ def main_loop(x1, y1, x2, y2):
             #Using Q-Learning for Optimisation:
             model1.optimizer.learning_rate = lrate
             model2.optimizer.learning_rate = lrate
+            
+            #Using discounted reward functions
+            reward1 = discount_reward(0.8, reward1)
+            reward2 = discount_reward(0.8, reward2)
+            
             model1.fit(training_data1,
                              reward1, epochs=1)
             
