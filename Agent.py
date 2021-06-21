@@ -14,12 +14,12 @@ import numpy as np
 def build_model():
     model = Sequential()
     model.add(Dense(20, activation="relu", input_shape=(6,)))
-    model.add(Dense(20, activation="sigmoid",input_shape=(8,)))
+    model.add(Dense(20, activation="relu",input_shape=(8,)))
     model.add(Dense(1, input_shape=(8,)))
     
     #Compiling the Model
     #sgd = SGD(lr=0.01)
-    adam = Adam(learning_rate=0.01)
+    adam = Adam(learning_rate=0.001)
     model.compile(optimizer=adam,
                   loss='mean_squared_error',
                   metrics=["acc"])

@@ -91,6 +91,7 @@ vel = 5
 
 #Main Loop
 def main_loop(x1, y1, x2, y2):
+    #State Settings
     new_game=False
     run = True
     training_enabled = 1
